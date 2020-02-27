@@ -3,6 +3,10 @@ package com.stackroute.keepnote.service;
 import com.stackroute.keepnote.exceptions.UserAlreadyExistsException;
 import com.stackroute.keepnote.exceptions.UserNotFoundException;
 import com.stackroute.keepnote.model.User;
+import com.stackroute.keepnote.repository.UserRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /*
 * Service classes are used here to implement additional business logic/validation 
@@ -14,6 +18,7 @@ import com.stackroute.keepnote.model.User;
 * future.
 * */
 
+@Service
 public class UserServiceImpl implements UserService {
 
 	/*
@@ -21,6 +26,8 @@ public class UserServiceImpl implements UserService {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword.
 	 */
+	@Autowired
+	private UserRepository userRepository;
 
 	/*
 	 * This method should be used to save a new user.Call the corresponding method
@@ -28,8 +35,11 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User registerUser(User user) throws UserAlreadyExistsException {
-
-		return null;
+		User userObj = userRepository.insert(user);
+		if (userObj != null)
+			return userObj;
+		else
+			throw new UserAlreadyExistsException("UserAlreadyExistsException");
 	}
 
 	/*
@@ -37,9 +47,10 @@ public class UserServiceImpl implements UserService {
 	 * method of Respository interface.
 	 */
 
-	public User updateUser(String userId,User user) throws UserNotFoundException {
-
-		return null;
+	public User updateUser(String userId, User user) throws UserNotFoundException {
+		user.setUserId(userId);
+		userRepository.save(user);
+		return user;
 	}
 
 	/*
@@ -48,8 +59,12 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public boolean deleteUser(String userId) throws UserNotFoundException {
-
-		return false;
+		User userObj = userRepository.findById(userId).orElse(null);
+		if (userObj != null) {
+			userRepository.delete(userObj);
+			return true;
+		} else
+			return false;
 	}
 
 	/*
@@ -58,8 +73,11 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User getUserById(String userId) throws UserNotFoundException {
-
-		return null;
+		User userObj = userRepository.findById(userId).orElse(null);
+		if (userObj != null)
+			return userObj;
+		else
+			throw new UserNotFoundException("User not found !");
 	}
 
 }
